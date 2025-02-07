@@ -21,6 +21,18 @@ class User {
     this.licenseNumber,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'phone': phone,
+      'userType': userType.toString(),
+      'specialization': specialization,
+      'licenseNumber': licenseNumber,
+    };
+  }
+
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'],
@@ -33,17 +45,5 @@ class User {
       specialization: json['specialization'],
       licenseNumber: json['licenseNumber'],
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-      'phone': phone,
-      'userType': userType.toString().split('.').last,
-      'specialization': specialization,
-      'licenseNumber': licenseNumber,
-    };
   }
 } 

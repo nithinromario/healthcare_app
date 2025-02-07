@@ -1,3 +1,5 @@
+import '../models/user.dart';
+
 class UserDataService {
   // Mock data for demonstration - replace with actual database/API calls
   static final List<Map<String, dynamic>> doctors = [

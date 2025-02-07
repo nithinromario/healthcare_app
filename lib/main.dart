@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 import 'views/auth/login_screen.dart';
 import 'views/auth/signup_screen.dart';
-import 'views/dashboard/patient_dashboard.dart';
-import 'views/dashboard/doctor_dashboard.dart';
-import 'views/dashboard/nurse_dashboard.dart';
-import 'services/notification_service.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await NotificationService().init(); // Initialize notifications
+void main() {
   runApp(HealthcareApp());
 }
 
