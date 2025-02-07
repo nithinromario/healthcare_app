@@ -4,76 +4,101 @@ import '../../models/appointment.dart';
 import '../../services/notification_service.dart';
 
 class BookAppointmentScreen extends StatefulWidget {
-  final User patient;
-  final String providerType; // "doctor" or "nurse"
-
-  BookAppointmentScreen({
-    required this.patient,
-    required this.providerType,
-  });
-
   @override
   _BookAppointmentScreenState createState() => _BookAppointmentScreenState();
 }
 
 class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
-  DateTime? selectedDate;
-  TimeOfDay? selectedTime;
-  String? selectedLocation;
-  String notes = '';
+  DateTime selectedDate = DateTime.now();
+  TimeOfDay selectedTime = TimeOfDay.now();
+  String selectedType = 'Doctor';
+  String selectedProvider = 'Dr. Smith';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Book ${widget.providerType} Appointment'),
-      ),
-      body: SingleChildScrollView(
+      appBar: AppBar(title: Text('Book Appointment')),
+      body: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Card(
-              child: ListTile(
-                leading: Icon(Icons.calendar_today),
-                title: Text(selectedDate != null 
-                  ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
-                  : 'Select Date'),
-                onTap: _selectDate,
-              ),
+            DropdownButtonFormField<String>(
+              value: selectedType,
+              decoration: InputDecoration(labelText: 'Appointment Type'),
+              items: ['Doctor', 'Nurse'].map((type) {
+                return DropdownMenuItem(value: type, child: Text(type));
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedType = value!;
+                  selectedProvider = selectedType == 'Doctor' 
+                      ? 'Dr. Smith' 
+                      : 'Nurse Emma';
+                });
+              },
             ),
             SizedBox(height: 16),
-            Card(
-              child: ListTile(
-                leading: Icon(Icons.access_time),
-                title: Text(selectedTime != null 
-                  ? '${selectedTime!.format(context)}'
-                  : 'Select Time'),
-                onTap: _selectTime,
-              ),
+            DropdownButtonFormField<String>(
+              value: selectedProvider,
+              decoration: InputDecoration(labelText: 'Select Provider'),
+              items: selectedType == 'Doctor'
+                  ? ['Dr. Smith', 'Dr. Johnson'].map((name) {
+                      return DropdownMenuItem(value: name, child: Text(name));
+                    }).toList()
+                  : ['Nurse Emma', 'Nurse Sarah'].map((name) {
+                      return DropdownMenuItem(value: name, child: Text(name));
+                    }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedProvider = value!;
+                });
+              },
             ),
             SizedBox(height: 16),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Location',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) => selectedLocation = value,
+            ListTile(
+              title: Text('Date: ${selectedDate.toString().split(' ')[0]}'),
+              trailing: Icon(Icons.calendar_today),
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: selectedDate,
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(Duration(days: 30)),
+                );
+                if (date != null) {
+                  setState(() {
+                    selectedDate = date;
+                  });
+                }
+              },
             ),
-            SizedBox(height: 16),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Notes',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-              onChanged: (value) => notes = value,
+            ListTile(
+              title: Text('Time: ${selectedTime.format(context)}'),
+              trailing: Icon(Icons.access_time),
+              onTap: () async {
+                final time = await showTimePicker(
+                  context: context,
+                  initialTime: selectedTime,
+                );
+                if (time != null) {
+                  setState(() {
+                    selectedTime = time;
+                  });
+                }
+              },
             ),
-            SizedBox(height: 24),
+            SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _bookAppointment,
+                onPressed: () {
+                  // TODO: Save appointment
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Appointment Booked Successfully!')),
+                  );
+                  Navigator.pop(context);
+                },
                 child: Text('Book Appointment'),
               ),
             ),
@@ -81,47 +106,5 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _selectDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(Duration(days: 30)),
-    );
-    if (picked != null) {
-      setState(() => selectedDate = picked);
-    }
-  }
-
-  Future<void> _selectTime() async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (picked != null) {
-      setState(() => selectedTime = picked);
-    }
-  }
-
-  void _bookAppointment() async {
-    if (selectedDate == null || selectedTime == null || selectedLocation == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill all required fields')),
-      );
-      return;
-    }
-
-    // Schedule appointment notification
-    await NotificationService().showAppointmentNotification(
-      title: 'Upcoming Appointment',
-      body: 'You have an appointment tomorrow at ${selectedTime!.format(context)}',
-      scheduledDate: selectedDate!.subtract(Duration(days: 1)),
-    );
-
-    // TODO: Implement appointment booking logic
-    
-    Navigator.pop(context);
   }
 } 

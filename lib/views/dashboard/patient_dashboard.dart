@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/user.dart';
 import '../../models/appointment.dart';
+import '../../views/patient/medical_history.dart';
 
 class PatientDashboard extends StatefulWidget {
   final User user;
@@ -18,19 +19,17 @@ class _PatientDashboardState extends State<PatientDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Healthcare App'),
+        title: Text('Patient Dashboard'),
         actions: [
           IconButton(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.history),
             onPressed: () {
-              // Navigate to profile
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () {
-              // Handle logout
-              Navigator.pushReplacementNamed(context, '/login');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MedicalHistoryScreen(patient: widget.user),
+                ),
+              );
             },
           ),
         ],
