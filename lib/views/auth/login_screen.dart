@@ -1,158 +1,217 @@
 import 'package:flutter/material.dart';
-import '../../models/user.dart';
-import '../../presenters/auth_presenter.dart';
-import '../../services/user_data_service.dart';
+import '../../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> implements AuthViewContract {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  late AuthPresenter _presenter;
-  
+  final AuthService _auth = AuthService();
   String _email = '';
   String _password = '';
+  String _userType = 'Patient';
   bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _presenter = AuthPresenter(this);
-  }
+  bool _obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _email = value!,
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Password'),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _password = value!,
-              ),
-              SizedBox(height: 24),
-              if (_isLoading)
-                CircularProgressIndicator()
-              else
-                ElevatedButton(
-                  onPressed: _handleLogin,
-                  child: Text('Login'),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/healthcare_bg.jpg'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.5),
+              BlendMode.darken,
+            ),
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(16.0),
+              child: Card(
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-              TextButton(
-                onPressed: () {
-                  // Navigate to signup screen
-                },
-                child: Text('Don\'t have an account? Sign up'),
+                color: Colors.white.withOpacity(0.9),
+                child: Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Logo or Icon
+                        Icon(
+                          Icons.local_hospital,
+                          size: 64,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'Healthcare App',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        SizedBox(height: 32),
+                        
+                        // User Type Selection
+                        DropdownButtonFormField<String>(
+                          value: _userType,
+                          decoration: InputDecoration(
+                            labelText: 'Login As',
+                            prefixIcon: Icon(Icons.person),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                          ),
+                          items: ['Patient', 'Doctor', 'Nurse']
+                              .map((type) => DropdownMenuItem(
+                                    value: type,
+                                    child: Text(type),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _userType = value!;
+                            });
+                          },
+                        ),
+                        SizedBox(height: 16),
+                        
+                        // Email Field
+                        TextFormField(
+                          decoration: InputDecoration(
+                            labelText: 'Email',
+                            prefixIcon: Icon(Icons.email),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your email';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) => _email = value,
+                        ),
+                        SizedBox(height: 16),
+                        
+                        // Password Field
+                        TextFormField(
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            prefixIcon: Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                          ),
+                          obscureText: _obscurePassword,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your password';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) => _password = value,
+                        ),
+                        SizedBox(height: 24),
+                        
+                        // Login Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _handleLogin,
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? CircularProgressIndicator(color: Colors.white)
+                                : Text(
+                                    'Login',
+                                    style: TextStyle(fontSize: 18),
+                                  ),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        
+                        // Sign Up Link
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/signup');
+                          },
+                          child: Text('Don\'t have an account? Sign Up'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
       setState(() => _isLoading = true);
-
-      // Mock login logic using UserDataService
+      
       try {
-        // Check doctors
-        final doctor = UserDataService.doctors.firstWhere(
-          (d) => d['email'] == _email,
-          orElse: () => {},
-        );
-        if (doctor.isNotEmpty) {
-          onLoginSuccess(UserDataService.getUserById(doctor['id']));
-          return;
+        final result = await _auth.signIn(_email, _password);
+        if (result != null) {
+          // Navigate based on user type
+          switch (_userType.toLowerCase()) {
+            case 'patient':
+              Navigator.pushReplacementNamed(context, '/patient_dashboard');
+              break;
+            case 'doctor':
+              Navigator.pushReplacementNamed(context, '/doctor_dashboard');
+              break;
+            case 'nurse':
+              Navigator.pushReplacementNamed(context, '/nurse_dashboard');
+              break;
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Login failed. Please try again.')),
+          );
         }
-
-        // Check nurses
-        final nurse = UserDataService.nurses.firstWhere(
-          (n) => n['email'] == _email,
-          orElse: () => {},
-        );
-        if (nurse.isNotEmpty) {
-          onLoginSuccess(UserDataService.getUserById(nurse['id']));
-          return;
-        }
-
-        // Check patients
-        final patient = UserDataService.patients.firstWhere(
-          (p) => p['email'] == _email,
-          orElse: () => {},
-        );
-        if (patient.isNotEmpty) {
-          onLoginSuccess(UserDataService.getUserById(patient['id']));
-          return;
-        }
-
-        onLoginError('User not found');
-      } catch (e) {
-        onLoginError(e.toString());
+      } finally {
+        setState(() => _isLoading = false);
       }
     }
-  }
-
-  @override
-  void onLoginSuccess(User user) {
-    setState(() => _isLoading = false);
-    // Navigate to appropriate dashboard based on user type
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => _getDashboardForUserType(user),
-      ),
-    );
-  }
-
-  @override
-  void onLoginError(String error) {
-    setState(() => _isLoading = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(error)),
-    );
-  }
-
-  @override
-  void onSignupSuccess(User user) {
-    // Not used in login screen
-  }
-
-  @override
-  void onSignupError(String error) {
-    // Not used in login screen
-  }
-
-  Widget _getDashboardForUserType(User user) {
-    // TODO: Implement dashboard routing based on user type
-    return Scaffold(body: Center(child: Text('Dashboard')));
   }
 } 

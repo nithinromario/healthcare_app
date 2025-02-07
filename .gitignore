@@ -50,7 +50,7 @@ app.*.map.json
 .pub-cache/
 .pub/
 build/
-ios/Pods/
+*.iml
 
 # Android specific
 **/android/**/gradle-wrapper.jar
@@ -60,6 +60,7 @@ ios/Pods/
 **/android/gradlew.bat
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
+android/app/google-services.json
 
 # iOS specific
 **/ios/**/*.mode1v3
@@ -86,6 +87,12 @@ ios/Pods/
 **/ios/Flutter/flutter_assets/
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
+ios/Runner/GoogleService-Info.plist
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+
+# Firebase
+.firebase/
 
 # IDE specific
 .idea/
