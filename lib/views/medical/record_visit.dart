@@ -25,7 +25,7 @@ class _RecordVisitScreenState extends State<RecordVisitScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Record Visit Details'),
+        title: const Text('Record Visit Details'),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),

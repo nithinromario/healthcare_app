@@ -1,128 +1,151 @@
 import 'package:flutter/material.dart';
-import '../../models/user.dart';
-import '../../models/appointment.dart';
-import '../../views/patient/medical_history.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/navigation_service.dart';
+import '../medical/book_appointment_screen.dart';
+import '../medical/medical_history_screen.dart';
+import '../profile/edit_profile_screen.dart';
 
 class PatientDashboard extends StatefulWidget {
-  final User user;
+  final Map<String, dynamic> userData;
 
-  PatientDashboard({required this.user});
+  const PatientDashboard({
+    Key? key,
+    required this.userData,
+  }) : super(key: key);
 
   @override
-  _PatientDashboardState createState() => _PatientDashboardState();
+  State<PatientDashboard> createState() => _PatientDashboardState();
 }
 
 class _PatientDashboardState extends State<PatientDashboard> {
-  int _selectedIndex = 0;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Patient Dashboard'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.history),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MedicalHistoryScreen(patient: widget.user),
+      appBar: _buildAppBar(),
+      body: _buildNavigationGrid(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => NavigationService.navigateTo(
+          NavigationService.bookAppointment,
+          arguments: widget.userData,
+        ),
+        child: const Icon(Icons.add),
+        tooltip: 'Book Appointment',
+      ),
+    );
+  }
+
+  Widget _buildNavigationGrid() {
+    final List<Map<String, dynamic>> navigationItems = [
+      {
+        'title': 'Book Appointment',
+        'icon': Icons.calendar_today,
+        'route': NavigationService.bookAppointment,
+      },
+      {
+        'title': 'My Appointments',
+        'icon': Icons.schedule,
+        'route': NavigationService.viewAppointments,
+      },
+      {
+        'title': 'Medical History',
+        'icon': Icons.history,
+        'route': NavigationService.medicalHistory,
+      },
+      {
+        'title': 'Prescriptions',
+        'icon': Icons.receipt,
+        'route': NavigationService.prescriptions,
+      },
+      {
+        'title': 'Lab Reports',
+        'icon': Icons.science,
+        'route': NavigationService.labReports,
+      },
+      {
+        'title': 'Chat with Doctor',
+        'icon': Icons.chat,
+        'route': NavigationService.chatList,
+      },
+      {
+        'title': 'Emergency',
+        'icon': Icons.emergency,
+        'route': NavigationService.emergency,
+      },
+      {
+        'title': 'Profile',
+        'icon': Icons.person,
+        'route': NavigationService.viewProfile,
+      },
+    ];
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 1.2,
+      ),
+      itemCount: navigationItems.length,
+      itemBuilder: (context, index) {
+        final item = navigationItems[index];
+        return Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: InkWell(
+            onTap: () => NavigationService.navigateTo(
+              item['route'],
+              arguments: widget.userData,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  item['icon'],
+                  size: 32,
+                  color: Theme.of(context).primaryColor,
                 ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: _buildBody(),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Appointments',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'History',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBody() {
-    switch (_selectedIndex) {
-      case 0:
-        return _buildHomeTab();
-      case 1:
-        return _buildAppointmentsTab();
-      case 2:
-        return _buildHistoryTab();
-      default:
-        return _buildHomeTab();
-    }
-  }
-
-  Widget _buildHomeTab() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Welcome, ${widget.user.name}!',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          SizedBox(height: 24),
-          Card(
-            child: ListTile(
-              leading: Icon(Icons.medical_services),
-              title: Text('Book Doctor Appointment'),
-              onTap: () {
-                // Navigate to doctor booking
-              },
+                const SizedBox(height: 8),
+                Text(
+                  item['title'],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 16),
-          Card(
-            child: ListTile(
-              leading: Icon(Icons.healing),
-              title: Text('Book Nurse Visit'),
-              onTap: () {
-                // Navigate to nurse booking
-              },
-            ),
-          ),
-          SizedBox(height: 24),
-          Text(
-            'Upcoming Appointments',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          SizedBox(height: 16),
-          // TODO: Add upcoming appointments list
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildAppointmentsTab() {
-    return Center(
-      child: Text('Appointments Tab'),
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: const Text('Patient Dashboard'),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.settings),
+          onPressed: () => NavigationService.navigateTo(NavigationService.settings),
+        ),
+        IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: () async {
+            await FirebaseAuth.instance.signOut();
+            if (mounted) {
+              NavigationService.navigateToAndRemoveUntil(NavigationService.login);
+            }
+          },
+        ),
+      ],
     );
   }
-  Widget _buildHistoryTab() {
-    return Center(
-      child: Text('Medical History Tab'),
-    );
-  }
-} 
+}

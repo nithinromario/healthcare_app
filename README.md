@@ -1,19 +1,28 @@
-# healthcare_app
+# Healthcare App
 
-A new Flutter project.
+## Description
+This is a healthcare application designed to manage patient information, appointments, and provide a user-friendly interface for both patients and healthcare providers. The application aims to streamline healthcare services, improve patient engagement, and enhance the overall quality of care.
+
+## Features
+- User authentication
+- Profile management
+- Appointment scheduling
+- Dummy data generation for testing
+- Electronic Health Records (EHRs) management
+- Telemedicine integration
+- Medication reminders and alerts
 
 ## Getting Started
+To run the app, ensure you have Flutter installed and run the following command:
+```
+flutter run -d chrome
+```
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Installation
+Clone the repository:
+```
+git clone https://github.com/nithinromario/healthcare_app.git
+```
 
 ## Test Accounts
 
@@ -76,4 +85,3 @@ This app implements several security measures:
 ## Note
 
 This is a demo application and should not be used in production without proper security audit and testing.
-

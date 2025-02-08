@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class LocationService {
   static final LocationService _instance = LocationService._internal();
 
@@ -18,7 +16,8 @@ class LocationService {
     };
   }
 
-  Future<void> updateLocation(String userId, Map<String, double> location) async {
+  Future<void> updateLocation(
+      String userId, Map<String, double> location) async {
     // TODO: Implement location update to backend
   }
 
@@ -29,4 +28,4 @@ class LocationService {
       yield await getCurrentLocation();
     }
   }
-} 
+}

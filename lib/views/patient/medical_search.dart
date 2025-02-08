@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class MedicalSearchScreen extends StatefulWidget {
   @override
   _MedicalSearchScreenState createState() => _MedicalSearchScreenState();

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class DetailedMedicalHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
